@@ -1,0 +1,979 @@
+
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+
+    <!-- Web3.js-->
+  <script src="node_modules/web3.js-browser/build/web3.js"></script>
+  <script src="node_modules/web3/dist/web3.min.js"></script>
+  <script src="web3connection.js"></script> 
+  <link rel="stylesheet" href="style.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation - CarPooling</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <!-- Font Awesome 6.4.0 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Web3.js-->
+    <script src="node_modules/web3.js-browser/build/web3.js"></script>
+    <script src="node_modules/web3/dist/web3.min.js"></script>
+    <script src="web3connection.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #1f2937;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        /* Header Styles */
+        header.header {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header.header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        header.header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        header.header .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        header.header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        header.header h1 i {
+            font-size: 2.8rem;
+        }
+
+        header.header .header-subtitle {
+            font-size: 1.1rem;
+            font-weight: 300;
+            margin: 0.5rem 0 1.5rem 0;
+            opacity: 0.95;
+        }
+
+        nav.nav-right {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* User Info Cards */
+        .user-info-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem 0;
+        }
+
+        .user-info-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #0891b2;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .user-info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .user-info-icon {
+            font-size: 2rem;
+            color: #0891b2;
+            flex-shrink: 0;
+        }
+
+        .user-info-content {
+            flex: 1;
+        }
+
+        .user-info-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1f2937;
+            word-break: break-all;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 3rem 1rem;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border-top: 5px solid transparent;
+            background-image: linear-gradient(white, white), linear-gradient(90deg, #16a34a, #22c55e);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            margin: 0;
+        }
+
+        .card-title i {
+            font-size: 2.5rem;
+        }
+
+        .card-content {
+            padding: 0;
+        }
+
+        /* Success Message */
+        .success-message {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #16a34a;
+            margin-bottom: 1rem;
+            animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .message-text {
+            font-size: 1.2rem;
+            color: #1f2937;
+            margin: 1rem 0;
+            font-weight: 600;
+        }
+
+        .message-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #16a34a;
+            margin: 1rem 0;
+        }
+
+        .message-address {
+            font-size: 0.9rem;
+            color: #6b7280;
+            word-break: break-all;
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .payment-details {
+            background: #f0fdf4;
+            border: 2px solid #dcfce7;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #dcfce7;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            color: #1f2937;
+            font-weight: 700;
+            word-break: break-all;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease;
+            z-index: 0;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+        }
+
+        .btn > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: white;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(8, 145, 178, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(8, 145, 178, 0.4);
+        }
+
+        .btn-primary i {
+            font-size: 1.2rem;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #0891b2;
+            border: 2px solid #0891b2;
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background: #f0f9fc;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+        }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Footer Styles */
+        footer.footer {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: #d1d5db;
+            margin-top: auto;
+            padding: 3rem 0 1rem 0;
+            border-top: 1px solid #374151;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            color: #f3f4f6;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section a {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: #0891b2;
+            transform: translateX(4px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-bottom-flex {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #0891b2;
+        }
+
+        .footer-copyright {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .social-links a {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-size: 1.2rem;
+        }
+
+        .social-links a:hover {
+            background: #0891b2;
+            border-color: #0891b2;
+            transform: translateY(-3px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            header.header h1 {
+                font-size: 2.5rem;
+            }
+
+            .card {
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header.header {
+                padding: 2rem 0;
+            }
+
+            header.header h1 {
+                font-size: 2rem;
+                gap: 0.5rem;
+            }
+
+            header.header h1 i {
+                font-size: 2rem;
+            }
+
+            header.header .header-subtitle {
+                font-size: 1rem;
+                margin: 0.5rem 0 1rem 0;
+            }
+
+            nav.nav-right {
+                gap: 0.5rem;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .user-info-section {
+                gap: 1rem;
+                padding: 1rem 0;
+            }
+
+            .card {
+                padding: 1.5rem;
+                border-radius: 15px;
+            }
+
+            .card-title {
+                font-size: 1.4rem;
+            }
+
+            .card-title i {
+                font-size: 2rem;
+            }
+
+            .message-amount {
+                font-size: 2rem;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .footer-bottom-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header.header h1 {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            header.header h1 i {
+                font-size: 1.5rem;
+            }
+
+            header.header .header-subtitle {
+                font-size: 0.9rem;
+            }
+
+            nav.nav-right {
+                flex-direction: column;
+            }
+
+            nav.nav-right a {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .user-info-section {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 1.25rem;
+                border-radius: 12px;
+            }
+
+            .card-title {
+                font-size: 1.2rem;
+            }
+
+            .card-title i {
+                font-size: 1.8rem;
+            }
+
+            .message-amount {
+                font-size: 1.5rem;
+            }
+
+            .btn {
+                padding: 0.9rem 1.5rem;
+                font-size: 0.85rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            small {
+                font-size: 0.75rem;
+            }
+        }
+        .rating-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+.rating-box {
+    background: white;
+    padding: 30px;
+    width: 350px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+    animation: popupScale 0.3s ease-in-out;
+}
+
+@keyframes popupScale {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.stars i {
+    font-size: 40px;
+    color: #d1d5db;
+    cursor: pointer;
+    margin: 5px;
+    transition: 0.2s;
+}
+
+.stars i.active {
+    color: #facc15;
+    transform: scale(1.2);
+}
+
+    </style>
+</head>
+<body>
+    <!-- ⭐ Rating Popup -->
+<div id="ratingPopup" class="rating-popup">
+    <div class="rating-box">
+        <h2>Rate Your Driver</h2>
+
+        <div class="stars">
+            <i class="fa-solid fa-star" data-star="1"></i>
+            <i class="fa-solid fa-star" data-star="2"></i>
+            <i class="fa-solid fa-star" data-star="3"></i>
+            <i class="fa-solid fa-star" data-star="4"></i>
+            <i class="fa-solid fa-star" data-star="5"></i>
+        </div>
+
+        <button id="submitRating" class="btn btn-primary">Submit Rating</button>
+        <button id="closeRating" class="btn btn-outline">Close</button>
+    </div>
+</div>
+
+    <div class="page-container">
+        <div class="container">
+            <header class="header">
+                <div class="container">
+                    <h1><i class="fas fa-check-circle"></i>Payment Confirmed</h1>
+                    <p class="header-subtitle">Your ride payment has been successfully transferred</p>
+                    <nav class="nav-right">
+                        <a href="dashboardpassenger.html" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                    </nav>
+                </div>
+            </header>
+
+            <!-- User Info Cards -->
+            <div class="user-info-section">
+                <div class="user-info-card">
+                    <div class="user-info-icon"><i class="fas fa-user-circle"></i></div>
+                    <div class="user-info-content">
+                        <div class="user-info-label">Username</div>
+                        <div class="user-info-value" id="uname">Loading...</div>
+                    </div>
+                </div>
+                <div class="user-info-card">
+                    <div class="user-info-icon"><i class="fas fa-wallet"></i></div>
+                    <div class="user-info-content">
+                        <div class="user-info-label">Your Wallet</div>
+                        <div class="user-info-value" id="hcode">Loading...</div>
+                    </div>
+                </div>
+                <div class="user-info-card">
+                    <div class="user-info-icon"><i class="fas fa-coins"></i></div>
+                    <div class="user-info-content">
+                        <div class="user-info-label">Remaining Balance</div>
+                        <div class="user-info-value" id="balance">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <main>
+                <div class="form-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-check-double"></i>Payment Successful</h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="success-message">
+                                <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+                                <div class="message-text">Ride Amount Transferred</div>
+                                <div class="message-amount" id="amtval">0 ETH</div>
+                                <div class="message-text">to Driver Address</div>
+                                <div class="message-address" id="dpaddress">Loading...</div>
+                            </div>
+
+                            <div class="payment-details">
+                                <div class="detail-row">
+                                    <div class="detail-label"><i class="fas fa-money-bill"></i> Amount Transferred</div>
+                                    <div class="detail-value" id="amtval-detail">0 ETH</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label"><i class="fas fa-map-location-dot"></i> Recipient Address</div>
+                                    <div class="detail-value" id="dpaddress-detail">Loading...</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label"><i class="fas fa-shield-alt"></i> Status</div>
+                                    <div class="detail-value" style="color: #16a34a;"><i class="fas fa-check-circle"></i> Confirmed</div>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons">
+                                <a href="dashboardpassenger.html" class="btn btn-primary">
+                                    <i class="fas fa-home"></i>Go to Dashboard
+                                </a>
+                                <a href="searchViewByLocation.html" class="btn btn-outline">
+                                    <i class="fas fa-search"></i>Book Another
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-info-circle"></i>About CarPooling</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Platform Overview</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>How It Works</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Features</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Security & Trust</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-steering-wheel"></i>For Drivers</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Register as Driver</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Driver Guidelines</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Earnings</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Support</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-users"></i>For Passengers</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Book a Ride</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Safety Tips</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Pricing</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Help Center</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-headset"></i>Support & Legal</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Contact Us</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Privacy Policy</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Terms of Service</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-flex">
+                <div class="social-links">
+                    <a href="#" title="Facebook" aria-label="Follow us on Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" title="Twitter" aria-label="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" title="LinkedIn" aria-label="Follow us on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" title="Instagram" aria-label="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+                <div class="footer-links">
+                    <a href="#"><i class="fas fa-file-contract"></i>Terms</a>
+                    <a href="#"><i class="fas fa-shield-alt"></i>Privacy</a>
+                    <a href="#"><i class="fas fa-cookie"></i>Cookies</a>
+                    <a href="#"><i class="fas fa-envelope"></i>Contact</a>
+                </div>
+            </div>
+            <p class="footer-copyright">
+                © 2025 CarPooling Platform. All rights reserved. | Built with <i class="fas fa-heart"></i> using Blockchain Technology
+            </p>
+        </div>
+    </footer>
+
+    <!-- Enhanced JavaScript with payment handling -->
+    <script>
+        $(document).ready(function(){
+            var hashcode = Cookies.get('hashcodecp');
+            var username = Cookies.get('usernamecp');
+
+            $("#uname").html(username);
+            $("#hcode").html(hashcode);
+
+            var param = new URLSearchParams(window.location.search);
+            var paymentToAddress = param.get("pto");
+            var amount = param.get("amount");
+            var rbid = param.get("rbid");
+
+            // WEB3.JS with ETH Transaction
+            web3.eth.sendTransaction({
+                'from': hashcode,
+                'to': paymentToAddress,
+                'value': web3.utils.toWei(amount.toString(), "ether")
+            }).then(function(receipt){
+                console.log("Payment successful:", receipt);
+            });
+
+            $("#amtval").text(amount + " ETH");
+            $("#amtval-detail").text(amount + " ETH");
+            $("#dpaddress").text(paymentToAddress);
+            $("#dpaddress-detail").text(paymentToAddress);
+
+            // Balance View
+            web3.eth.getBalance(hashcode).then(function(rvalue) {
+                rvalue = web3.utils.fromWei(rvalue, "ether");
+                $("#balance").html(rvalue + " ETH");
+            });
+
+            // Update Payment Status
+            myContract.methods.ridepaymentupdates(rbid).send({from: hashcode, gas: '3000000'});
+        });
+    </script>
+  <script>
+$(document).ready(function () {
+
+    // Show rating popup after payment
+    setTimeout(() => {
+        $("#ratingPopup").fadeIn(300);
+    }, 1200);
+
+    let rating = 0;
+
+    // Handle star click
+    $(".stars i").click(function () {
+        rating = $(this).data("star");
+        $(".stars i").removeClass("active");
+        for (let i = 1; i <= rating; i++) {
+            $(".stars i[data-star='" + i + "']").addClass("active");
+        }
+    });
+
+    // Submit rating
+    $("#submitRating").click(function () {
+
+        if (rating === 0) {
+            alert("Please select a rating!");
+            return;
+        }
+
+        // ------------------------------------------
+        // ⭐ FIX: No driver hash check – use ride id
+        // ------------------------------------------
+        let rideId = localStorage.getItem("currentRideId") || "temporaryRide";
+
+        // Keep the old ride-level key for compatibility
+        let key = "rating_" + rideId;
+        localStorage.setItem(key, rating.toString());
+
+        // Determine driver address (from URL param or displayed address)
+        let driverAddress = new URLSearchParams(window.location.search).get("pto") || $("#dpaddress").text() || null;
+
+        // Save rating into a driver-centric array so driver dashboard can compute averages.
+        // Use driver address as primary stable key for driver ratings.
+        if (driverAddress) {
+            try {
+                let driverKey = "ratings_driver_" + driverAddress;
+                let darr = JSON.parse(localStorage.getItem(driverKey) || '[]');
+                let passenger = Cookies.get('usernamecp') || Cookies.get('username') || null;
+                darr.push({ rideId: rideId, rating: Number(rating), ts: new Date().toISOString(), passenger: passenger, source: 'ui' });
+                localStorage.setItem(driverKey, JSON.stringify(darr));
+                console.log("Saved rating into driver key:", driverKey, rating);
+            } catch (e) {
+                console.error("Failed to save driver ratings array:", e);
+            }
+        } else {
+            // If driver address is not available, fallback to saving under ride-level key only
+            console.warn("Driver address not found; saved only ride-level rating:", key);
+        }
+
+        console.log("Rating Saved Locally (Temporary for Ganache):", rating);
+
+        // UI feedback
+        alert("Rating submitted: " + rating + " stars");
+        $("#ratingPopup").fadeOut(300);
+    });
+
+    // Close popup
+    $("#closeRating").click(function () {
+        $("#ratingPopup").fadeOut(300);
+    });
+
+});
+</script>
+
+
+</body>
+</html>

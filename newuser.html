@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - CarPooling</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <!-- Font Awesome 6.4.0 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Web3.js-->
+    <script src="node_modules/web3.js-browser/build/web3.js"></script>
+    <script src="node_modules/web3/dist/web3.min.js"></script>
+    <script src="web3connection.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #1f2937;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        /* Header Styles */
+        header.header {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header.header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        header.header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        header.header .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        header.header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        header.header h1 i {
+            font-size: 2.8rem;
+        }
+
+        header.header .header-subtitle {
+            font-size: 1.1rem;
+            font-weight: 300;
+            margin: 0.5rem 0 1.5rem 0;
+            opacity: 0.95;
+        }
+
+        nav.nav-right {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 3rem 1rem;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border-top: 5px solid transparent;
+            background-image: linear-gradient(white, white), linear-gradient(90deg, #0891b2, #f59e0b);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0891b2;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 0;
+        }
+
+        .card-title i {
+            font-size: 1.8rem;
+        }
+
+        .card-content {
+            padding: 0;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label i {
+            font-size: 1rem;
+            color: #0891b2;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #0891b2;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+
+        small {
+            display: block;
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .text-muted {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        /* Message Styles */
+        #message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease;
+        }
+
+        .message-success {
+            background: #ecfdf5;
+            color: #065f46;
+            border-left-color: #16a34a;
+        }
+
+        .message-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border-left-color: #dc2626;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease;
+            z-index: 0;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+        }
+
+        .btn > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: white;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(8, 145, 178, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(8, 145, 178, 0.4);
+        }
+
+        .btn-primary i {
+            font-size: 1.2rem;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #0891b2;
+            border: 2px solid #0891b2;
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background: #f0f9fc;
+            transform: translateY(-2px);
+        }
+
+        /* Loading State */
+        .btn.loading {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1.2rem;
+            height: 1.2rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .btn-outline .spinner {
+            border-top-color: #0891b2;
+            border-color: rgba(8, 145, 178, 0.3);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Footer Styles */
+        footer.footer {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: #d1d5db;
+            margin-top: auto;
+            padding: 3rem 0 1rem 0;
+            border-top: 1px solid #374151;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            color: #f3f4f6;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section a {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: #0891b2;
+            transform: translateX(4px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-bottom-flex {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #0891b2;
+        }
+
+        .footer-copyright {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .social-links a {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-size: 1.2rem;
+        }
+
+        .social-links a:hover {
+            background: #0891b2;
+            border-color: #0891b2;
+            transform: translateY(-3px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .form-container {
+                grid-template-columns: 1fr;
+            }
+
+            header.header h1 {
+                font-size: 2.5rem;
+            }
+
+            .card {
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header.header {
+                padding: 2rem 0;
+            }
+
+            header.header h1 {
+                font-size: 2rem;
+                gap: 0.5rem;
+            }
+
+            header.header h1 i {
+                font-size: 2rem;
+            }
+
+            header.header .header-subtitle {
+                font-size: 1rem;
+                margin: 0.5rem 0 1rem 0;
+            }
+
+            nav.nav-right {
+                gap: 0.5rem;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .form-container {
+                gap: 1.5rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+                border-radius: 15px;
+            }
+
+            .card-title {
+                font-size: 1.4rem;
+            }
+
+            .card-title i {
+                font-size: 1.6rem;
+            }
+
+            .form-label {
+                font-size: 0.85rem;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .footer-bottom-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header.header h1 {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            header.header h1 i {
+                font-size: 1.5rem;
+            }
+
+            header.header .header-subtitle {
+                font-size: 0.9rem;
+            }
+
+            nav.nav-right {
+                flex-direction: column;
+            }
+
+            nav.nav-right a {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .form-container {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 1.25rem;
+                border-radius: 12px;
+            }
+
+            .card-title {
+                font-size: 1.2rem;
+            }
+
+            .btn {
+                padding: 0.9rem 1.5rem;
+                font-size: 0.85rem;
+            }
+
+            .form-input {
+                padding: 0.9rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            small {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="container">
+            <header class="header">
+                <div class="container">
+                    <h1><i class="fas fa-user-plus"></i>Join CarPooling</h1>
+                    <p class="header-subtitle">Create your account to start sharing rides</p>
+                    <nav class="nav-right">
+                        <a href="index.html" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to Login</a>
+                    </nav>
+                </div>
+            </header>
+
+            <main>
+                <div class="form-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-user-edit"></i>Create New Account</h2>
+                        </div>
+                        <div class="card-content">
+                            <form id="registrationForm">
+                                <div class="form-group">
+                                    <label for="username" class="form-label">
+                                        <i class="fas fa-user"></i>Full Name
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="username" 
+                                        class="form-input"
+                                        placeholder="Enter your full name" 
+                                        required
+                                        minlength="2"
+                                    />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="useremail" class="form-label">
+                                        <i class="fas fa-envelope"></i>Email Address
+                                    </label>
+                                    <input 
+                                        type="email" 
+                                        id="useremail" 
+                                        class="form-input"
+                                        placeholder="Enter your email address" 
+                                        required
+                                    />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="usercontact" class="form-label">
+                                        <i class="fas fa-phone"></i>Contact Number
+                                    </label>
+                                    <input 
+                                        type="tel" 
+                                        id="usercontact" 
+                                        class="form-input"
+                                        placeholder="Enter your phone number" 
+                                        required
+                                        pattern="[0-9+\-\s]+"
+                                    />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="hashaddress" class="form-label">
+                                        <i class="fas fa-wallet"></i>Wallet Address
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="hashaddress" 
+                                        class="form-input"
+                                        placeholder="0x742d35Cc6634C0532925a3b844Bc9e7595f..." 
+                                        required
+                                        minlength="40"
+                                    />
+                                    <small><i class="fas fa-info-circle"></i> This will be your unique identifier on the blockchain</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="button" id="btn_action" class="btn btn-primary">
+                                        <i class="fas fa-check-circle"></i>Create Account
+                                    </button>
+                                </div>
+
+                                <div id="message" style="display: none;"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-info-circle"></i>About CarPooling</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Platform Overview</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>How It Works</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Features</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Security & Trust</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-steering-wheel"></i>For Drivers</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Register as Driver</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Driver Guidelines</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Earnings</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Support</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-users"></i>For Passengers</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Book a Ride</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Safety Tips</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Pricing</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Help Center</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3><i class="fas fa-headset"></i>Support & Legal</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Contact Us</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Privacy Policy</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>Terms of Service</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i>FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-flex">
+                <div class="social-links">
+                    <a href="#" title="Facebook" aria-label="Follow us on Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" title="Twitter" aria-label="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" title="LinkedIn" aria-label="Follow us on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" title="Instagram" aria-label="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+                <div class="footer-links">
+                    <a href="#"><i class="fas fa-file-contract"></i>Terms</a>
+                    <a href="#"><i class="fas fa-shield-alt"></i>Privacy</a>
+                    <a href="#"><i class="fas fa-cookie"></i>Cookies</a>
+                    <a href="#"><i class="fas fa-envelope"></i>Contact</a>
+                </div>
+            </div>
+            <p class="footer-copyright">
+                © 2025 CarPooling Platform. All rights reserved. | Built with <i class="fas fa-heart"></i> using Blockchain Technology
+            </p>
+        </div>
+    </footer>
+
+    <!-- Enhanced JavaScript with form validation and better UX -->
+    <script>
+        $(document).ready(function(){
+            function showMessage(text, type) {
+                $("#message").removeClass('message-success message-error')
+                    .addClass('message message-' + type)
+                    .html(text)
+                    .show();
+            }
+            
+            function validateForm() {
+                var username = $("#username").val().trim();
+                var email = $("#useremail").val().trim();
+                var contact = $("#usercontact").val().trim();
+                var hashcode = $("#hashaddress").val().trim();
+                
+                if (!username || username.length < 2) {
+                    showMessage("<i class='fas fa-exclamation-circle'></i> Please enter a valid name (at least 2 characters)", "error");
+                    return false;
+                }
+                
+                if (!email || !email.includes('@')) {
+                    showMessage("<i class='fas fa-exclamation-circle'></i> Please enter a valid email address", "error");
+                    return false;
+                }
+                
+                if (!contact || contact.length < 10) {
+                    showMessage("<i class='fas fa-exclamation-circle'></i> Please enter a valid contact number", "error");
+                    return false;
+                }
+                
+                if (!hashcode || hashcode.length < 40) {
+                    showMessage("<i class='fas fa-exclamation-circle'></i> Please enter a valid wallet address", "error");
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            $("#btn_action").click(function(){
+                $("#message").hide();
+                
+                if (!validateForm()) {
+                    return;
+                }
+                
+                var hashcode = $("#hashaddress").val().trim();
+                var uname = $("#username").val().trim();
+                var uemail = $("#useremail").val().trim();
+                var ucontact = $("#usercontact").val().trim();
+                
+                // Show loading state
+                $(this).addClass('loading').html('<span class="spinner"></span> Creating Account...');
+                
+                try {
+                    myContract.methods.RegisterUserAccount(hashcode, uname, ucontact, uemail)
+                        .send({from: hashcode, gas: '3000000'})
+                        .then(function(receipt) {
+                            Cookies.set('hashcodecp', hashcode, {expires: 14});
+                            Cookies.set('usernamecp', uname, {expires: 14});
+                            
+                            showMessage("<i class='fas fa-check-circle'></i> Account created successfully! Redirecting...", "success");
+                            
+                            setTimeout(function() {
+                                window.location.replace('userdashboardpanelchoice.html');
+                            }, 2000);
+                        })
+                        .catch(function(error) {
+                            $("#btn_action").removeClass('loading').html('<i class="fas fa-check-circle"></i>Create Account');
+                            showMessage("<i class='fas fa-times-circle'></i> Error creating account. Please try again.", "error");
+                            console.error("Registration error:", error);
+                        });
+                } catch (error) {
+                    $("#btn_action").removeClass('loading').html('<i class="fas fa-check-circle"></i>Create Account');
+                    showMessage("<i class='fas fa-times-circle'></i> Please connect your Web3 wallet first.", "error");
+                    console.error("Web3 error:", error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

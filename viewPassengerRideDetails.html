@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CarPooling - Passenger Ride Details</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+        <!-- Web3.js-->
+        <script src="node_modules/web3.js-browser/build/web3.js"></script>
+        <script src="node_modules/web3/dist/web3.min.js"></script>
+        <script src="web3connection.js"></script> 
+        <link rel="stylesheet" href="global.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            /* Enhanced Design Styles */
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+                min-height: 100vh;
+                background-attachment: fixed;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            }
+
+            /* Header and Footer Styles */
+            header.header {
+                background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+                color: white;
+                padding: 3rem 0;
+                margin-bottom: 2rem;
+                box-shadow: 0 8px 32px rgba(8, 145, 178, 0.3);
+                position: relative;
+                overflow: hidden;
+            }
+
+            header.header::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+                pointer-events: none;
+            }
+
+            header.header::after {
+                content: '';
+                position: absolute;
+                bottom: -50%;
+                right: -10%;
+                width: 400px;
+                height: 400px;
+                background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+                border-radius: 50%;
+                pointer-events: none;
+            }
+
+            header.header h1 {
+                font-size: 3.5rem;
+                font-weight: 800;
+                margin: 0;
+                color: white;
+                text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                position: relative;
+                z-index: 1;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                justify-content: center;
+            }
+
+            header.header h1 i {
+                font-size: 3.5rem;
+                animation: float 3s ease-in-out infinite;
+            }
+
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+            }
+
+            header.header .header-subtitle {
+                color: rgba(255, 255, 255, 0.95);
+                font-size: 1.3rem;
+                margin: 0.75rem 0 1.5rem 0;
+                font-weight: 300;
+                letter-spacing: 1px;
+                position: relative;
+                z-index: 1;
+                text-align: center;
+            }
+
+            header.header .nav-right {
+                position: relative;
+                z-index: 1;
+                margin-top: 1.5rem;
+                display: flex;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            header.header .btn-outline {
+                background: rgba(255, 255, 255, 0.15);
+                color: white;
+                border: 2px solid white;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                padding: 0.875rem 2rem;
+                border-radius: 50px;
+                font-size: 1rem;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            header.header .btn-outline:hover {
+                background: white;
+                color: #0891b2;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            }
+
+            /* Main content area */
+            .page-container {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 1rem;
+                width: 100%;
+            }
+
+            main {
+                flex: 1;
+                padding: 2rem 1rem;
+            }
+
+            /* User Info Section */
+            .user-info-section {
+                max-width: 1200px;
+                margin: 0 auto 2rem;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.5rem;
+                padding: 0 1rem;
+            }
+
+            .info-card {
+                background: white;
+                padding: 1.5rem;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                transition: all 0.3s ease;
+            }
+
+            .info-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            }
+
+            .info-icon {
+                font-size: 2rem;
+                color: #0891b2;
+                min-width: 50px;
+                text-align: center;
+            }
+
+            .info-content h3 {
+                margin: 0;
+                color: #6b7280;
+                font-size: 0.9rem;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .info-content p {
+                margin: 0.5rem 0 0 0;
+                color: #1f2937;
+                font-size: 1.3rem;
+                font-weight: 700;
+                word-break: break-all;
+            }
+
+            /* Rides Container */
+            .rides-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 1rem;
+            }
+
+            .rides-header {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                margin-bottom: 2rem;
+                color: white;
+            }
+
+            .rides-header h2 {
+                margin: 0;
+                font-size: 2rem;
+                font-weight: 700;
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            .rides-header i {
+                font-size: 2.5rem;
+                animation: pulse 2s ease-in-out infinite;
+            }
+
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.6; }
+            }
+
+            .ride-card {
+                background: white;
+                border-radius: 15px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border-left: 5px solid #8b5cf6;
+                transition: all 0.3s ease;
+            }
+
+            .ride-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+                border-left-color: #0891b2;
+            }
+
+            .ride-card-header {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1.5rem;
+                border-bottom: 2px solid #e5e7eb;
+            }
+
+            .ride-location {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .ride-location-icon {
+                font-size: 1.5rem;
+                color: #8b5cf6;
+                min-width: 30px;
+            }
+
+            .ride-location-info h4 {
+                margin: 0;
+                color: #6b7280;
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .ride-location-info p {
+                margin: 0.5rem 0 0 0;
+                color: #1f2937;
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+
+            .ride-details {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .detail-item {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .detail-label {
+                color: #6b7280;
+                font-size: 0.85rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 0.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .detail-label i {
+                color: #8b5cf6;
+            }
+
+            .detail-value {
+                color: #1f2937;
+                font-size: 1rem;
+                font-weight: 700;
+            }
+
+            .status-badge {
+                display: inline-block;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .status-active {
+                background: #d1fae5;
+                color: #047857;
+            }
+
+            .status-cancelled {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            .status-open {
+                background: #fef3c7;
+                color: #92400e;
+            }
+
+            .status-closed {
+                background: #e0e7ff;
+                color: #3730a3;
+            }
+
+            .ride-actions {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                margin-top: 1.5rem;
+                padding-top: 1.5rem;
+                border-top: 2px solid #e5e7eb;
+            }
+
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.75rem;
+                padding: 0.9rem 1.8rem;
+                border-radius: 10px;
+                font-weight: 600;
+                font-size: 0.9rem;
+                text-decoration: none;
+                border: none;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .btn::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.3);
+                transform: translate(-50%, -50%);
+                transition: width 0.6s, height 0.6s;
+            }
+
+            .btn:hover::before {
+                width: 300px;
+                height: 300px;
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            }
+
+            .btn-primary:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+            }
+
+            .btn-secondary {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            }
+
+            .btn-secondary:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+            }
+
+            .btn-danger {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+            }
+
+            .btn-danger:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+            }
+
+            /* Footer Styles */
+            footer.footer {
+                background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+                color: #d1d5db;
+                margin-top: 3rem;
+                padding: 3rem 0 1rem 0;
+                border-top: 1px solid #374151;
+            }
+
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 1rem;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .footer-section h3 {
+                color: #f3f4f6;
+                font-size: 1.125rem;
+                font-weight: 600;
+                margin: 0 0 1rem 0;
+            }
+
+            .footer-section ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .footer-section li {
+                margin-bottom: 0.75rem;
+            }
+
+            .footer-section a {
+                color: #d1d5db;
+                text-decoration: none;
+                transition: all 0.3s ease;
+            }
+
+            .footer-section a:hover {
+                color: #8b5cf6;
+                transform: translateX(4px);
+            }
+
+            .footer-bottom {
+                border-top: 1px solid #374151;
+                padding-top: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .footer-copyright {
+                color: #9ca3af;
+                font-size: 0.875rem;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                header.header {
+                    padding: 2rem 0;
+                }
+
+                header.header h1 {
+                    font-size: 2rem;
+                }
+
+                header.header h1 i {
+                    font-size: 2rem;
+                }
+
+                header.header .header-subtitle {
+                    font-size: 1rem;
+                }
+
+                main {
+                    padding: 1rem;
+                }
+
+                .user-info-section {
+                    grid-template-columns: 1fr;
+                }
+
+                .ride-card-header {
+                    grid-template-columns: 1fr;
+                }
+
+                .ride-details {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+
+                .ride-actions {
+                    flex-direction: column;
+                }
+
+                .btn {
+                    width: 100%;
+                }
+
+                .rides-header h2 {
+                    font-size: 1.5rem;
+                }
+            }
+
+            @media (max-width: 480px) {
+                header.header h1 {
+                    font-size: 1.5rem;
+                }
+
+                header.header .nav-right {
+                    flex-direction: column;
+                }
+
+                header.header .btn-outline {
+                    width: 100%;
+                    max-width: 300px;
+                }
+
+                .ride-card {
+                    padding: 1.5rem;
+                }
+
+                .ride-details {
+                    grid-template-columns: 1fr;
+                }
+
+                .btn {
+                    font-size: 0.8rem;
+                    padding: 0.8rem 1.5rem;
+                }
+            }
+        </style>
+
+        <script>
+            var hashcode = "";
+            $(document).ready(function(){
+                var hashcode = Cookies.get('hashcodecp');
+                var username = Cookies.get('usernamecp');  
+                
+                $("#uname").html(username); 
+                $("#hcode").html(hashcode);
+                
+                // Balance View
+                web3.eth.getBalance(hashcode).then(function(rvalue){
+                    rvalue = web3.utils.fromWei(rvalue, "ether");
+                    $("#balance").html(rvalue + " ETH"); 
+                });
+
+                var totalrides = 0;
+                
+                // Reading passenger rides
+                myContract.methods.getPassengerRides(hashcode).call().then(
+                    function(returnarray){
+                        var index = 0;
+                        $("#ridecount").text(returnarray[1]);
+                        totalrides = parseInt(returnarray[1]);
+                        var output = "";
+                        var rideno = 1;
+                        
+                        while(index < totalrides) {
+                            var obj = returnarray[0][index];
+                            var bookingStatus = obj[8];
+                            var rideStatus = obj[12] == true ? 'Active' : 'Cancelled';
+                            var rideStatusBadge = obj[12] == true ? 'status-active' : 'status-cancelled';
+                            var bookingOpen = obj[10] == false ? 'status-open' : 'status-closed';
+                            var bookingStatusText = obj[10] == false ? 'Open for Booking' : 'Booking Closed';
+
+                            output += '<div class="ride-card">';
+                            output += '<div class="ride-card-header">';
+                            output += '<div class="ride-location">';
+                            output += '<div class="ride-location-icon"><i class="fas fa-map-marker-alt"></i></div>';
+                            output += '<div class="ride-location-info">';
+                            output += '<h4>From</h4>';
+                            output += '<p>' + obj[2] + '</p>';
+                            output += '</div></div>';
+                            output += '<div class="ride-location">';
+                            output += '<div class="ride-location-icon"><i class="fas fa-flag"></i></div>';
+                            output += '<div class="ride-location-info">';
+                            output += '<h4>To</h4>';
+                            output += '<p>' + obj[3] + '</p>';
+                            output += '</div></div>';
+                            output += '</div>';
+
+                            output += '<div class="ride-details">';
+                            output += '<div class="detail-item">';
+                            output += '<div class="detail-label"><i class="fas fa-calendar"></i>Ride Date</div>';
+                            output += '<div class="detail-value">' + obj[4] + '</div>';
+                            output += '</div>';
+                            output += '<div class="detail-item">';
+                            output += '<div class="detail-label"><i class="fas fa-clock"></i>Ride Time</div>';
+                            output += '<div class="detail-value">' + obj[5] + '</div>';
+                            output += '</div>';
+                            output += '<div class="detail-item">';
+                            output += '<div class="detail-label"><i class="fas fa-money-bill"></i>Ride Charges</div>';
+                            output += '<div class="detail-value">' + obj[6] + ' ETH</div>';
+                            output += '</div>';
+                            output += '<div class="detail-item">';
+                            output += '<div class="detail-label"><i class="fas fa-users"></i>Seats</div>';
+                            output += '<div class="detail-value">' + obj[7] + '</div>';
+                            output += '</div>';
+                            output += '<div class="detail-item">';
+                            output += '<div class="detail-label"><i class="fas fa-car"></i>Vehicle Type</div>';
+                            output += '<div class="detail-value">' + obj[9] + '</div>';
+                            output += '</div>';
+                            output += '<div class="detail-item">';
+                            output += '<div class="detail-label"><i class="fas fa-check-circle"></i>Ride Status</div>';
+                            output += '<span class="status-badge ' + rideStatusBadge + '">' + rideStatus + '</span>';
+                            output += '</div>';
+                            output += '<div class="detail-item">';
+                            output += '<div class="detail-label"><i class="fas fa-bookmark"></i>Booking Status</div>';
+                            output += '<span class="status-badge ' + bookingOpen + '">' + bookingStatusText + '</span>';
+                            output += '</div>';
+                            output += '<div class="detail-item">';
+                            output += '<div class="detail-label"><i class="fas fa-info-circle"></i>Current Booking</div>';
+                            output += '<div class="detail-value">' + bookingStatus + '</div>';
+                            output += '</div>';
+                            output += '</div>';
+
+                            output += '<div class="ride-actions">';
+                            
+                            var uhc = obj[1];
+                            output += '<a class="btn btn-primary" href="viewPersonDetails.html?rideno=' + obj[0] + '&personhashcode=' + uhc + '"><i class="fas fa-user-circle"></i>Driver Details</a>';
+
+                            if(obj[10] == false) {
+                                output += '<a class="btn btn-secondary" href="mapRideBooking.html?rideno=' + obj[0] + '"><i class="fas fa-calendar-check"></i>Book This Ride</a>';
+                            } else {
+                                output += '<a class="btn btn-danger" disabled><i class="fas fa-lock"></i>Booking Closed</a>';
+                            }
+                            
+                            output += '</div>';
+                            output += '</div>';
+                            
+                            index++;
+                            rideno++;
+                        }
+
+                        if(totalrides === 0) {
+                            output = '<div style="text-align: center; padding: 3rem; background: white; border-radius: 15px; color: #6b7280;"><i class="fas fa-inbox" style="font-size: 3rem; color: #d1d5db; margin-bottom: 1rem; display: block;"></i><p>No available rides found</p></div>';
+                        }
+
+                        $("#ridedetails").html(output);
+                    }
+                );
+            });
+        </script>
+
+    </head>
+    <body>
+        <div class="page-container">
+            <div class="container">
+                <header class="header">
+                    <div class="container">
+                        <h1><i class="fas fa-car"></i>CarPooling</h1>
+                        <p class="header-subtitle">🎫 Available Passenger Rides</p>
+                        <nav class="nav-right">
+                            <a href="dashboardpassenger.html" class="btn-outline"><i class="fas fa-home"></i> Dashboard</a>
+                        </nav>
+                    </div>
+                </header>
+
+                <!-- User Info Section -->
+                <div class="user-info-section">
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fas fa-user"></i></div>
+                        <div class="info-content">
+                            <h3>Username</h3>
+                            <p id="uname">-</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="info-content">
+                            <h3>Wallet Address</h3>
+                            <p id="hcode">-</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fas fa-coins"></i></div>
+                        <div class="info-content">
+                            <h3>Account Balance</h3>
+                            <p id="balance">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <main>
+                    <div class="rides-container">
+                        <div class="rides-header">
+                            <i class="fas fa-list"></i>
+                            <h2>Available Rides (<span id="ridecount">0</span>)</h2>
+                        </div>
+                        <div id="ridedetails"></div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🚗 About CarPooling</h3>
+                    <ul>
+                        <li><a href="#">Platform Overview</a></li>
+                        <li><a href="#">How It Works</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Security & Trust</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>👥 For Passengers</h3>
+                    <ul>
+                        <li><a href="#">Book a Ride</a></li>
+                        <li><a href="#">Safety Tips</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>📞 Support & Legal</h3>
+                    <ul>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    © 2025 CarPooling Platform. All rights reserved. | Built with ❤️ using Blockchain Technology
+                </p>
+            </div>
+        </footer>
+    </body>
+</html>

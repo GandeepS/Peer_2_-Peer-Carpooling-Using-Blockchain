@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CarPooling - Person Details</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+      
+        <!-- Web3.js-->
+        <script src="node_modules/web3.js-browser/build/web3.js"></script>
+        <script src="node_modules/web3/dist/web3.min.js"></script>
+        <script src="web3connection.js"></script> 
+        <link rel="stylesheet" href="global.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            /* Enhanced Design Styles */
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+                min-height: 100vh;
+                background-attachment: fixed;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            }
+
+            /* Header and Footer Styles */
+            header.header {
+                background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+                color: white;
+                padding: 3rem 0;
+                margin-bottom: 2rem;
+                box-shadow: 0 8px 32px rgba(8, 145, 178, 0.3);
+                position: relative;
+                overflow: hidden;
+            }
+
+            header.header::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+                pointer-events: none;
+            }
+
+            header.header::after {
+                content: '';
+                position: absolute;
+                bottom: -50%;
+                right: -10%;
+                width: 400px;
+                height: 400px;
+                background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+                border-radius: 50%;
+                pointer-events: none;
+            }
+
+            header.header h1 {
+                font-size: 3.5rem;
+                font-weight: 800;
+                margin: 0;
+                color: white;
+                text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                position: relative;
+                z-index: 1;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                justify-content: center;
+            }
+
+            header.header h1 i {
+                font-size: 3.5rem;
+                animation: float 3s ease-in-out infinite;
+            }
+
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+            }
+
+            header.header .header-subtitle {
+                color: rgba(255, 255, 255, 0.95);
+                font-size: 1.3rem;
+                margin: 0.75rem 0 1.5rem 0;
+                font-weight: 300;
+                letter-spacing: 1px;
+                position: relative;
+                z-index: 1;
+                text-align: center;
+            }
+
+            header.header .nav-right {
+                position: relative;
+                z-index: 1;
+                margin-top: 1.5rem;
+                display: flex;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            header.header .btn-outline {
+                background: rgba(255, 255, 255, 0.15);
+                color: white;
+                border: 2px solid white;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                padding: 0.875rem 2rem;
+                border-radius: 50px;
+                font-size: 1rem;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            header.header .btn-outline:hover {
+                background: white;
+                color: #0891b2;
+                transform: translateY(-3px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            }
+
+            /* Main content area */
+            .page-container {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 1rem;
+                width: 100%;
+            }
+
+            main {
+                flex: 1;
+                padding: 2rem 1rem;
+            }
+
+            /* User Info Section */
+            .user-info-section {
+                max-width: 1200px;
+                margin: 0 auto 2rem;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.5rem;
+                padding: 0 1rem;
+            }
+
+            .info-card {
+                background: white;
+                padding: 1.5rem;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                transition: all 0.3s ease;
+            }
+
+            .info-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            }
+
+            .info-icon {
+                font-size: 2rem;
+                color: #0891b2;
+                min-width: 50px;
+                text-align: center;
+            }
+
+            .info-content h3 {
+                margin: 0;
+                color: #6b7280;
+                font-size: 0.9rem;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .info-content p {
+                margin: 0.5rem 0 0 0;
+                color: #1f2937;
+                font-size: 1.3rem;
+                font-weight: 700;
+                word-break: break-all;
+            }
+
+            /* Person Details Card */
+            .person-card {
+                background: white;
+                border-radius: 15px;
+                padding: 3rem;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border-left: 5px solid #8b5cf6;
+                max-width: 700px;
+                margin: 2rem auto;
+                transition: all 0.3s ease;
+            }
+
+            .person-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+                border-left-color: #0891b2;
+            }
+
+            .person-card h2 {
+                color: #1f2937;
+                font-size: 1.8rem;
+                margin: 0 0 2rem 0;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid #e5e7eb;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .person-card h2 i {
+                color: #8b5cf6;
+                font-size: 2rem;
+            }
+
+            .detail-item {
+                display: flex;
+                align-items: center;
+                gap: 1.5rem;
+                padding: 1.5rem;
+                background: #f9fafb;
+                border-radius: 10px;
+                margin-bottom: 1rem;
+                transition: all 0.3s ease;
+            }
+
+            .detail-item:hover {
+                background: #f3f4f6;
+                transform: translateX(5px);
+            }
+
+            .detail-item-icon {
+                font-size: 1.75rem;
+                color: #8b5cf6;
+                min-width: 50px;
+                text-align: center;
+            }
+
+            .detail-item-content {
+                flex: 1;
+            }
+
+            .detail-label {
+                color: #6b7280;
+                font-size: 0.85rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 0.5rem;
+            }
+
+            .detail-value {
+                color: #1f2937;
+                font-size: 1.1rem;
+                font-weight: 700;
+                word-break: break-word;
+            }
+
+            .detail-value a {
+                color: #0891b2;
+                text-decoration: none;
+                transition: all 0.3s ease;
+            }
+
+            .detail-value a:hover {
+                color: #8b5cf6;
+                text-decoration: underline;
+            }
+
+            /* Action Button */
+            .action-button {
+                display: flex;
+                justify-content: center;
+                gap: 1rem;
+                margin-top: 2rem;
+                padding-top: 2rem;
+                border-top: 2px solid #e5e7eb;
+                flex-wrap: wrap;
+            }
+
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.75rem;
+                padding: 0.9rem 1.8rem;
+                border-radius: 10px;
+                font-weight: 600;
+                font-size: 0.9rem;
+                text-decoration: none;
+                border: none;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .btn::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.3);
+                transform: translate(-50%, -50%);
+                transition: width 0.6s, height 0.6s;
+            }
+
+            .btn:hover::before {
+                width: 300px;
+                height: 300px;
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            }
+
+            .btn-primary:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+            }
+
+            /* Footer Styles */
+            footer.footer {
+                background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+                color: #d1d5db;
+                margin-top: 3rem;
+                padding: 3rem 0 1rem 0;
+                border-top: 1px solid #374151;
+            }
+
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 1rem;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .footer-section h3 {
+                color: #f3f4f6;
+                font-size: 1.125rem;
+                font-weight: 600;
+                margin: 0 0 1rem 0;
+            }
+
+            .footer-section ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .footer-section li {
+                margin-bottom: 0.75rem;
+            }
+
+            .footer-section a {
+                color: #d1d5db;
+                text-decoration: none;
+                transition: all 0.3s ease;
+            }
+
+            .footer-section a:hover {
+                color: #8b5cf6;
+                transform: translateX(4px);
+            }
+
+            .footer-bottom {
+                border-top: 1px solid #374151;
+                padding-top: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .footer-copyright {
+                color: #9ca3af;
+                font-size: 0.875rem;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                header.header {
+                    padding: 2rem 0;
+                }
+
+                header.header h1 {
+                    font-size: 2rem;
+                }
+
+                header.header h1 i {
+                    font-size: 2rem;
+                }
+
+                header.header .header-subtitle {
+                    font-size: 1rem;
+                }
+
+                main {
+                    padding: 1rem;
+                }
+
+                .user-info-section {
+                    grid-template-columns: 1fr;
+                }
+
+                .person-card {
+                    padding: 2rem;
+                }
+
+                .detail-item {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+            }
+
+            @media (max-width: 480px) {
+                header.header h1 {
+                    font-size: 1.5rem;
+                }
+
+                header.header .nav-right {
+                    flex-direction: column;
+                }
+
+                header.header .btn-outline {
+                    width: 100%;
+                    max-width: 300px;
+                }
+
+                .person-card {
+                    padding: 1.5rem;
+                }
+
+                .person-card h2 {
+                    font-size: 1.4rem;
+                }
+
+                .detail-item {
+                    padding: 1rem;
+                }
+
+                .btn {
+                    font-size: 0.8rem;
+                    padding: 0.8rem 1.5rem;
+                }
+            }
+        </style>
+
+        <script>
+            var hashcode="";
+            $(document).ready(function(){
+                var hashcode=Cookies.get('hashcodecp');
+                var username=Cookies.get('usernamecp');  
+
+                $("#uname").html(username); 
+                $("#hcode").html(hashcode);
+                
+                // Balance View
+                web3.eth.getBalance(hashcode).then(function(rvalue){
+                    rvalue=web3.utils.fromWei(rvalue,"ether");
+                    $("#balance").html(rvalue + " ETH"); 
+                });
+
+                // Reading of Query String
+                var param=new URLSearchParams(window.location.search);
+                var phc=param.get("personhashcode");
+                var rideno=param.get("rideno");
+                
+                myContract.methods.getUserDetails(phc).call().then(
+                    function(returnarray){
+                        var obj=returnarray;
+
+                        var output = '<div class="detail-item">';
+                        output += '<div class="detail-item-icon"><i class="fas fa-user-circle"></i></div>';
+                        output += '<div class="detail-item-content">';
+                        output += '<div class="detail-label">Full Name</div>';
+                        output += '<div class="detail-value">' + obj[0] + '</div>';
+                        output += '</div></div>';
+
+                        output += '<div class="detail-item">';
+                        output += '<div class="detail-item-icon"><i class="fas fa-phone"></i></div>';
+                        output += '<div class="detail-item-content">';
+                        output += '<div class="detail-label">Contact Number</div>';
+                        output += '<div class="detail-value">' + obj[1] + '</div>';
+                        output += '</div></div>';
+
+                        output += '<div class="detail-item">';
+                        output += '<div class="detail-item-icon"><i class="fas fa-envelope"></i></div>';
+                        output += '<div class="detail-item-content">';
+                        output += '<div class="detail-label">Email Address</div>';
+                        output += '<div class="detail-value"><a href="mailto:' + obj[2] + '" target="_blank">' + obj[2] + '</a></div>';
+                        output += '</div></div>';
+
+                        // --- Ratings: compute average and count from localStorage ---
+                        try {
+                            var ratingsArr = [];
+                            if (phc) {
+                                var driverKey = 'ratings_driver_' + phc;
+                                try { ratingsArr = JSON.parse(localStorage.getItem(driverKey) || '[]'); } catch(e) { ratingsArr = []; }
+                            }
+
+                            // Fallback to legacy single-key rating
+                            if ((!ratingsArr || ratingsArr.length === 0) && phc) {
+                                var legacy = localStorage.getItem('rating_' + phc);
+                                if (legacy) {
+                                    ratingsArr = [{ rideId: null, rating: Number(legacy), ts: new Date().toISOString(), source: 'legacy' }];
+                                }
+                            }
+
+                            var ratingDisplay = 'No ratings yet';
+                            var starsHTML = '☆☆☆☆☆';
+                            if (ratingsArr && ratingsArr.length > 0) {
+                                var sum = 0, cnt = 0;
+                                ratingsArr.forEach(function(it){ var r = Number(it.rating)||0; if (r>0){ sum+=r; cnt++; }});
+                                if (cnt>0) {
+                                    var avg = sum / cnt;
+                                    ratingDisplay = avg.toFixed(1) + ' / 5 (' + cnt + ' ratings)';
+                                    var rounded = Math.round(avg);
+                                    starsHTML = '';
+                                    for (var i=1;i<=5;i++){ starsHTML += (i<=rounded)?'★':'☆'; }
+                                }
+                            }
+
+                            output += '<div class="detail-item">';
+                            output += '<div class="detail-item-icon"><i class="fas fa-star"></i></div>';
+                            output += '<div class="detail-item-content">';
+                            output += '<div class="detail-label">Rating</div>';
+                            output += '<div class="detail-value">' + ratingDisplay + ' <span style="color:#facc15; margin-left:8px; font-size:18px;">' + starsHTML + '</span></div>';
+                            output += '</div></div>';
+                        } catch(e) {
+                            console.warn('Rating render error', e);
+                        }
+
+                        output += '<div class="action-button">';
+                        output += '<a class="btn btn-primary" href="viewPassengerRideDetails.html"><i class="fas fa-arrow-left"></i>Back to Rides</a>';
+                        output += '</div>';
+
+                        $("#persondetails").html(output);
+                    }
+                );
+            });
+        </script>
+
+    </head>
+    <body>
+        <div class="page-container">
+            <div class="container">
+                <header class="header">
+                    <div class="container">
+                        <h1><i class="fas fa-user-tie"></i>CarPooling</h1>
+                        <p class="header-subtitle">👤 Person Details</p>
+                        <nav class="nav-right">
+                            <a href="userdashboardpanelchoice.html" class="btn-outline"><i class="fas fa-home"></i>Dashboard</a>
+                        </nav>
+                    </div>
+                </header>
+
+                <!-- User Info Section -->
+                <div class="user-info-section">
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fas fa-user"></i></div>
+                        <div class="info-content">
+                            <h3>Your Username</h3>
+                            <p id="uname">-</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="info-content">
+                            <h3>Your Wallet</h3>
+                            <p id="hcode">-</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fas fa-coins"></i></div>
+                        <div class="info-content">
+                            <h3>Your Balance</h3>
+                            <p id="balance">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <main>
+                    <div class="person-card">
+                        <h2><i class="fas fa-address-card"></i>Driver Information</h2>
+                        <div id="persondetails"></div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🚗 About CarPooling</h3>
+                    <ul>
+                        <li><a href="#">Platform Overview</a></li>
+                        <li><a href="#">How It Works</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Security & Trust</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>👥 For Passengers</h3>
+                    <ul>
+                        <li><a href="#">Book a Ride</a></li>
+                        <li><a href="#">Safety Tips</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>📞 Support & Legal</h3>
+                    <ul>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    © 2025 CarPooling Platform. All rights reserved. | Built with ❤️ using Blockchain Technology
+                </p>
+            </div>
+        </footer>
+    </body>
+</html>

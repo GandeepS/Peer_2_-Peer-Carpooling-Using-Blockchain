@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Ride Activated - CarPooling</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+      
+        <!-- Web3.js-->
+        <script src="node_modules/web3.js-browser/build/web3.js"></script>
+        <script src="node_modules/web3/dist/web3.min.js"></script>
+        <script src="web3connection.js"></script> 
+        <link rel="stylesheet" href="global.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Enhanced Design Styles - Matching index.html */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            background-attachment: fixed;
+            padding: 0;
+            margin: 0;
+            font-family: "Geist Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* Header Styles */
+        header.header {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(8, 145, 178, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header.header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        header.header::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        header.header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 0;
+            color: white;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        header.header h1 i {
+            font-size: 3.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        header.header .header-subtitle {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.3rem;
+            margin: 0.75rem 0 1.5rem 0;
+            font-weight: 300;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        header.header .nav-right {
+            position: relative;
+            z-index: 1;
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        header.header .btn-outline {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        header.header .btn-outline:hover {
+            background: white;
+            color: #0891b2;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Page Container */
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+
+        /* Success Message Card */
+        .success-container {
+            max-width: 700px;
+            margin: -3rem auto 2rem;
+            position: relative;
+            z-index: 5;
+        }
+
+        .success-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #16a34a;
+            margin: 0 0 1.5rem 0;
+            animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-message {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 1rem 0;
+        }
+
+        .success-subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin: 1rem 0 2rem 0;
+        }
+
+        /* User Info Section */
+        .user-info-section {
+            max-width: 900px;
+            margin: 2rem auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 0 1rem;
+        }
+
+        .user-info-card {
+            background: white;
+            padding: 1.75rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0891b2, #f59e0b);
+        }
+
+        .user-info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .user-info-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #0891b2;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-info-label i {
+            font-size: 1.1rem;
+        }
+
+        .user-info-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1f2937;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Action Buttons Section */
+        .action-buttons {
+            max-width: 900px;
+            margin: 2rem auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 0 1rem;
+        }
+
+        .action-btn-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0891b2, #f59e0b);
+        }
+
+        .action-btn-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-btn-card h3 {
+            font-size: 1.3rem;
+            color: #1f2937;
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .action-btn-card h3 i {
+            font-size: 1.5rem;
+            color: #0891b2;
+        }
+
+        .action-btn-card p {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin: 0 0 1.5rem 0;
+        }
+
+        /* Button Styling */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.1rem 2.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(8, 145, 178, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(8, 145, 178, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Footer Styles */
+        footer.footer {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: #d1d5db;
+            margin-top: 3rem;
+            padding: 3rem 0 1rem 0;
+            border-top: 1px solid #374151;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            color: #f3f4f6;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section a {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: #0891b2;
+            transform: translateX(4px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-bottom-flex {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #0891b2;
+        }
+
+        .footer-copyright {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .social-links a {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-size: 1.2rem;
+        }
+
+        .social-links a:hover {
+            background: #0891b2;
+            border-color: #0891b2;
+            transform: translateY(-3px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            header.header h1 {
+                font-size: 2.5rem;
+            }
+
+            header.header h1 i {
+                font-size: 2.5rem;
+            }
+
+            .success-card {
+                padding: 2rem;
+            }
+
+            .success-message {
+                font-size: 1.5rem;
+            }
+
+            .success-icon {
+                font-size: 3.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header.header {
+                padding: 2rem 0;
+            }
+
+            header.header h1 {
+                font-size: 2rem;
+                gap: 0.5rem;
+            }
+
+            header.header h1 i {
+                font-size: 2rem;
+            }
+
+            header.header .header-subtitle {
+                font-size: 1rem;
+                margin: 0.5rem 0 1rem 0;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .success-container {
+                margin: -2rem 1rem 1.5rem;
+            }
+
+            .success-card {
+                padding: 1.5rem;
+            }
+
+            .success-message {
+                font-size: 1.3rem;
+            }
+
+            .success-icon {
+                font-size: 3rem;
+            }
+
+            .user-info-section,
+            .action-buttons {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+                margin: 1.5rem 0;
+            }
+
+            .user-info-card,
+            .action-btn-card {
+                padding: 1.25rem;
+            }
+
+            .btn {
+                font-size: 0.85rem;
+                padding: 0.9rem 1.5rem;
+                width: 100%;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .footer-bottom-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header.header h1 {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            header.header h1 i {
+                font-size: 1.5rem;
+            }
+
+            header.header .header-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .success-container {
+                margin: -1.5rem 0.5rem 1rem;
+            }
+
+            .success-card {
+                padding: 1.25rem;
+            }
+
+            .success-message {
+                font-size: 1.1rem;
+            }
+
+            .success-icon {
+                font-size: 2.5rem;
+                margin: 0 0 1rem 0;
+            }
+
+            .user-info-section,
+            .action-buttons {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+                margin: 1rem 0.5rem;
+            }
+
+            .user-info-card,
+            .action-btn-card {
+                padding: 1rem;
+            }
+
+            .user-info-label {
+                font-size: 0.75rem;
+            }
+
+            .user-info-value {
+                font-size: 0.95rem;
+            }
+
+            .action-btn-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .action-btn-card p {
+                font-size: 0.85rem;
+            }
+
+            .btn {
+                font-size: 0.8rem;
+                padding: 0.75rem 1.25rem;
+                width: 100%;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+    var hashcode="";
+    $(document).ready(function(){
+
+          var hashcode=Cookies.get('hashcodecp');
+          var username=Cookies.get('usernamecp');  
+
+           $("#uname").html(username); 
+           $("#hcode").html(hashcode);
+
+           //balance View
+web3.eth.getBalance(hashcode).then(function(rvalue){
+                rvalue=web3.utils.fromWei(rvalue,"ether");
+               $("#balance").html(rvalue + "ETH"); 
+
+            })
+            var totalrides=0;
+           //reading of Query String
+            var param=new URLSearchParams(window.location.search);
+            var rideno=param.get("rideno");
+            myContract.methods.activateRide(rideno).send({from : hashcode, gas : '3000000'});
+    });
+
+    </script>
+
+    </head>
+    <body>
+        <div class="page-container">
+            <div class="container">
+                <header class="header">
+                    <div class="container">
+                        <h1><i class="fas fa-car"></i>CarPooling</h1>
+                        <p class="header-subtitle">🌍 Secure blockchain-based ride sharing platform</p>
+                        <nav class="nav-right">
+                            <a href="dashboard.html" class="btn btn-outline"><i class="fas fa-home"></i> Dashboard</a>
+                        </nav>
+                    </div>
+                </header>
+
+                <main>
+                    <!-- Success Message Card -->
+                    <div class="success-container">
+                        <div class="success-card">
+                            <div class="success-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="success-message">✨ Ride Activated Successfully!</div>
+                            <div class="success-subtitle">Your ride has been activated and is ready to go.</div>
+                        </div>
+                    </div>
+
+                    <!-- User Info Section -->
+                    <div class="user-info-section">
+                        <div class="user-info-card">
+                            <div class="user-info-item">
+                                <span class="user-info-label"><i class="fas fa-user-circle"></i> User</span>
+                                <span class="user-info-value" id="uname"></span>
+                            </div>
+                        </div>
+                        <div class="user-info-card">
+                            <div class="user-info-item">
+                                <span class="user-info-label"><i class="fas fa-key"></i> Account ID</span>
+                                <span class="user-info-value" id="hcode"></span>
+                            </div>
+                        </div>
+                        <div class="user-info-card">
+                            <div class="user-info-item">
+                                <span class="user-info-label"><i class="fas fa-wallet"></i> Balance</span>
+                                <span class="user-info-value" id="balance"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <div class="action-btn-card">
+                            <h3><i class="fas fa-tachometer-alt"></i> Next Steps</h3>
+                            <p>Access your driver dashboard to view ride details and manage your earnings.</p>
+                            <a href="dashboard.html" class="btn btn-primary">
+                                <i class="fas fa-arrow-right"></i> Go to Dashboard
+                            </a>
+                        </div>
+                        <div class="action-btn-card">
+                            <h3><i class="fas fa-home"></i> View More</h3>
+                            <p>Check your ride history and manage your profile settings.</p>
+                            <a href="ViewDriverBookedRides.html" class="btn btn-secondary">
+                                <i class="fas fa-list"></i> View Rides
+                            </a>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🚗 About CarPooling</h3>
+                    <ul>
+                        <li><a href="#">Platform Overview</a></li>
+                        <li><a href="#">How It Works</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Security & Trust</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>🔗 For Drivers</h3>
+                    <ul>
+                        <li><a href="#">Register as Driver</a></li>
+                        <li><a href="#">Driver Guidelines</a></li>
+                        <li><a href="#">Earnings</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>👥 For Passengers</h3>
+                    <ul>
+                        <li><a href="#">Book a Ride</a></li>
+                        <li><a href="#">Safety Tips</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>📞 Support & Legal</h3>
+                    <ul>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-bottom-flex">
+                    <div class="social-links">
+                        <a href="#" title="Facebook" aria-label="Follow us on Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" title="Twitter" aria-label="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" title="LinkedIn" aria-label="Follow us on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" title="Instagram" aria-label="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                    <div class="footer-links">
+                        <a href="#">Terms</a>
+                        <a href="#">Privacy</a>
+                        <a href="#">Cookies</a>
+                        <a href="#">Contact</a>
+                    </div>
+                </div>
+                <p class="footer-copyright">
+                    © 2024 CarPooling Platform. All rights reserved. | Built with ❤️ using Blockchain Technology
+                </p>
+            </div>
+        </footer>
+    </body>
+</html>

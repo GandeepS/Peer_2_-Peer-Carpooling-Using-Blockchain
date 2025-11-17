@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Dashboard - CarPooling</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <!-- Web3.js-->
+    <script src="node_modules/web3.js-browser/build/web3.js"></script>
+    <script src="node_modules/web3/dist/web3.min.js"></script>
+    <script src="web3connection.js"></script> 
+    <link rel="stylesheet" href="global.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Enhanced Design Styles - Matching index.html */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            background-attachment: fixed;
+            padding: 0;
+            margin: 0;
+            font-family: "Geist Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* Header Styles */
+        header.header {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(8, 145, 178, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header.header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        header.header::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        header.header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 0;
+            color: white;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        header.header h1 i {
+            font-size: 3.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        header.header .header-subtitle {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.3rem;
+            margin: 0.75rem 0 1.5rem 0;
+            font-weight: 300;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        header.header .nav-right {
+            position: relative;
+            z-index: 1;
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        header.header .btn-outline {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        header.header .btn-outline:hover {
+            background: white;
+            color: #0891b2;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        header.header .btn-logout {
+            background: rgba(220, 38, 38, 0.2);
+            color: white;
+            border: 2px solid rgba(220, 38, 38, 0.8);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        header.header .btn-logout:hover {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        /* Page Container */
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+
+        /* User Info Section */
+        .user-info {
+            max-width: 1000px;
+            margin: -3rem auto 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 5;
+        }
+
+        .user-info-item {
+            background: white;
+            padding: 1.75rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .user-info-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0891b2, #f59e0b);
+        }
+
+        .user-info-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-info-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #0891b2;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .user-info-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1f2937;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Card Styling */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #0891b2, #06b6d4);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-title i {
+            font-size: 2.2rem;
+            color: #0891b2;
+        }
+
+        .card-content {
+            width: 100%;
+        }
+
+        /* Menu Grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 2rem;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border: 2px solid #e5e7eb;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .menu-item:hover::before {
+            left: 100%;
+        }
+
+        .menu-item:hover {
+            border-color: #0891b2;
+            background: linear-gradient(135deg, #e0f2fe 0%, #cffafe 100%);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(8, 145, 178, 0.2);
+        }
+
+        .menu-item-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0891b2;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .menu-item-title i {
+            font-size: 1.5rem;
+        }
+
+        .menu-item-description {
+            font-size: 0.95rem;
+            color: #6b7280;
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .menu-item-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            min-width: 30px;
+            height: 30px;
+        }
+
+        /* Footer Styles */
+        footer.footer {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: #d1d5db;
+            margin-top: 3rem;
+            padding: 3rem 0 1rem 0;
+            border-top: 1px solid #374151;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            color: #f3f4f6;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section a {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: #0891b2;
+            transform: translateX(4px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-bottom-flex {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #0891b2;
+        }
+
+        .footer-copyright {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .social-links a {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-size: 1.2rem;
+        }
+
+        .social-links a:hover {
+            background: #0891b2;
+            border-color: #0891b2;
+            transform: translateY(-3px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            header.header h1 {
+                font-size: 2.5rem;
+            }
+
+            header.header h1 i {
+                font-size: 2.5rem;
+            }
+
+            .card {
+                padding: 2rem;
+            }
+
+            .card-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header.header {
+                padding: 2rem 0;
+            }
+
+            header.header h1 {
+                font-size: 2rem;
+                gap: 0.5rem;
+            }
+
+            header.header h1 i {
+                font-size: 2rem;
+            }
+
+            header.header .nav-right {
+                gap: 0.5rem;
+                margin-top: 1rem;
+            }
+
+            header.header .btn-outline,
+            header.header .btn-logout {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.9rem;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .user-info {
+                margin: -2rem 1rem 1.5rem;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .user-info-item {
+                padding: 1.25rem;
+            }
+
+            .card {
+                margin: 1.5rem;
+                padding: 1.5rem;
+                border-radius: 15px;
+            }
+
+            .card-title {
+                font-size: 1.3rem;
+                gap: 0.75rem;
+            }
+
+            .card-title i {
+                font-size: 1.6rem;
+            }
+
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .menu-item {
+                padding: 1.5rem;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .footer-bottom-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header.header h1 {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            header.header h1 i {
+                font-size: 1.5rem;
+            }
+
+            header.header .nav-right {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            header.header .btn-outline,
+            header.header .btn-logout {
+                width: 100%;
+                justify-content: center;
+                padding: 0.75rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            .user-info {
+                margin: -1.5rem 0.5rem 1rem;
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .user-info-item {
+                padding: 1rem;
+            }
+
+            .user-info-label {
+                font-size: 0.75rem;
+            }
+
+            .user-info-value {
+                font-size: 0.95rem;
+            }
+
+            .card {
+                margin: 1rem 0.5rem;
+                padding: 1rem;
+                border-radius: 12px;
+            }
+
+            .card-title {
+                font-size: 1.2rem;
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .card-title i {
+                font-size: 1.4rem;
+            }
+
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .menu-item {
+                padding: 1rem;
+            }
+
+            .menu-item-title {
+                font-size: 1.1rem;
+            }
+
+            .menu-item-description {
+                font-size: 0.9rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Modern dashboard layout with cards and improved UX -->
+    <div class="page-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <h1>
+                    <i class="fas fa-steering-wheel"></i>
+                    Driver Dashboard
+                </h1>
+                <nav class="nav-right">
+                    <a class="btn-outline" href="userdashboardpanelchoice.html">
+                        <i class="fas fa-exchange-alt"></i>
+                        Switch Account
+                    </a>
+                    <a class="btn-logout" href="index.html">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <div class="container">
+                <!-- User Information Cards -->
+                <div class="user-info">
+                    <div class="user-info-item">
+                        <span class="user-info-label">
+                            <i class="fas fa-user-circle"></i>
+                            Welcome
+                        </span>
+                        <span class="user-info-value" id="uname">Loading...</span>
+                    </div>
+                    <div class="user-info-item">
+                        <span class="user-info-label">
+                            <i class="fas fa-key"></i>
+                            Account ID
+                        </span>
+                        <span class="user-info-value" id="hcode">Loading...</span>
+                    </div>
+                    <div class="user-info-item">
+                        <span class="user-info-label">
+                            <i class="fas fa-wallet"></i>
+                            Balance
+                        </span>
+                        <span class="user-info-value" id="balance">Loading...</span>
+                    </div>
+                </div>
+                <!-- ================= DRIVER RATINGS DISPLAY ================= -->
+<div class="card mb-4 shadow rating-box" 
+     style="background:#fff; padding:20px; border-radius:10px; border-left:5px solid #ff9800;">
+
+    <h3 style="margin:0; font-size:22px; color:#ff9800;">⭐ Your Current Rating</h3>
+
+    <p id="driverRatingValue" style="font-size:18px; margin:8px 0 5px; color:#555;">
+        Loading rating...
+    </p>
+
+    <div id="driverRatingStars" style="font-size:24px; color:#ff9800;">
+        ★★★★★
+    </div>
+</div>
+<!-- ========================================================== -->
+
+
+                <!-- Driver Actions Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-tasks"></i>
+                            Driver Actions
+                        </h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="menu-grid">
+                            <a href="publishride.html" class="menu-item">
+                                <div class="menu-item-title">
+                                    <i class="fas fa-rocket"></i>
+                                    Publish Your Ride
+                                </div>
+                                <div class="menu-item-description">Create a new ride offer for passengers to book</div>
+                            </a>
+                            
+                            <a href="viewRideDetails.html" class="menu-item">
+                                <div class="menu-item-title">
+                                    <i class="fas fa-list"></i>
+                                    View Your Rides
+                                </div>
+                                <div class="menu-item-description">
+                                    Manage your published rides
+                                    <span class="menu-item-badge" id="cntview">0</span>
+                                </div>
+                            </a>
+                            
+                            <a href="ViewDriverBookedRides.html" class="menu-item">
+                                <div class="menu-item-title">
+                                    <i class="fas fa-calendar-check"></i>
+                                    Check Ride Bookings
+                                </div>
+                                <div class="menu-item-description">Review and approve passenger booking requests</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h3>
+                            <i class="fas fa-car"></i>
+                            CarPooling
+                        </h3>
+                        <p style="font-size: 0.95rem; line-height: 1.6; margin: 0;">
+                            The modern carpooling platform connecting drivers and passengers for shared rides.
+                        </p>
+                    </div>
+
+                    <div class="footer-section">
+                        <h3>
+                            <i class="fas fa-link"></i>
+                            Quick Links
+                        </h3>
+                        <ul>
+                            <li><a href="index.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                            <li><a href="publishride.html"><i class="fas fa-rocket"></i> Publish Ride</a></li>
+                            <li><a href="#"><i class="fas fa-question-circle"></i> Help</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h3>
+                            <i class="fas fa-share-alt"></i>
+                            Follow Us
+                        </h3>
+                        <div class="social-links">
+                            <a href="#" title="Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" title="Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <div class="footer-bottom-flex">
+                        <div class="footer-links">
+                            <a href="#">Privacy Policy</a>
+                            <a href="#">Terms of Service</a>
+                            <a href="#">Contact Us</a>
+                        </div>
+                    </div>
+                    <div class="footer-copyright">
+                        <p style="margin: 0;">
+                            <i class="fas fa-copyright"></i> 2024 CarPooling Platform. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Enhanced JavaScript with better error handling -->
+    <script>
+        $(document).ready(function(){
+            var hashcode = Cookies.get('hashcodecp');
+            var username = Cookies.get('usernamecp');
+            
+            if (!hashcode || !username) {
+                alert("Session expired. Please login again.");
+                window.location.replace('index.html');
+                return;
+            }
+            
+            // Display user info
+            $("#uname").html(username);
+            $("#hcode").html(hashcode);
+            
+            // Get balance
+            web3.eth.getBalance(hashcode).then(function(rvalue){
+                rvalue = web3.utils.fromWei(rvalue, "ether");
+                $("#balance").html(parseFloat(rvalue).toFixed(4) + " ETH");
+            }).catch(function(error) {
+                $("#balance").html("Error loading balance");
+                console.error("Balance error:", error);
+            });
+            
+            // Get ride count
+            myContract.methods.getMyRides(hashcode).call().then(
+                function(returnarray){
+                    $("#cntview").text(returnarray[1]);
+                }
+            ).catch(function(error) {
+                $("#cntview").text("0");
+                console.error("Rides count error:", error);
+            });
+        });
+    </script>
+   <script>
+$(document).ready(function () {
+
+    // Get current driver address (check multiple places for robustness)
+    let driverAddress = Cookies.get("userAddress") || Cookies.get('hashcodecp') || localStorage.getItem('userAddress') || null;
+
+    if (!driverAddress) {
+        $("#driverRatingValue").text("Driver not logged in");
+        return;
+    }
+
+    // Read ratings stored per-driver (driver address is the primary key for driver averages)
+    let ratingsArr = [];
+
+    if (driverAddress) {
+        let driverKey = 'ratings_driver_' + driverAddress;
+        try {
+            ratingsArr = JSON.parse(localStorage.getItem(driverKey) || '[]');
+        } catch (e) {
+            console.warn('Failed to parse', driverKey, e);
+            ratingsArr = [];
+        }
+
+        // If no driver array yet, try to migrate legacy keys into driver array once
+        if ((!ratingsArr || ratingsArr.length === 0) && !localStorage.getItem('ratings_migrated_driver_' + driverAddress)) {
+            // Migrate legacy single driver rating
+            let legacyDriverKey = 'rating_' + driverAddress;
+            let legacyDriverVal = localStorage.getItem(legacyDriverKey);
+            if (legacyDriverVal) {
+                ratingsArr.push({ rideId: null, rating: Number(legacyDriverVal), ts: new Date().toISOString(), source: 'legacy-driver' });
+            }
+
+            // Migrate ride-level ratings by scanning currentRideId and any known rides (best-effort)
+            let currentRideId = localStorage.getItem('currentRideId');
+            if (currentRideId) {
+                let legacyRideKey = 'rating_' + currentRideId;
+                let legacyRideVal = localStorage.getItem(legacyRideKey);
+                if (legacyRideVal) {
+                    ratingsArr.push({ rideId: currentRideId, rating: Number(legacyRideVal), ts: new Date().toISOString(), source: 'legacy-ride' });
+                }
+            }
+
+            // Save migrated driver array and mark migrated
+            try {
+                localStorage.setItem(driverKey, JSON.stringify(ratingsArr));
+                localStorage.setItem('ratings_migrated_driver_' + driverAddress, '1');
+            } catch (e) {
+                console.error('Failed to save migrated ratings for', driverKey, e);
+            }
+        }
+    } else {
+        // No driver address available, try legacy fallback
+        let driverKeySingle = 'rating_' + driverAddress;
+        let savedRating = localStorage.getItem(driverKeySingle);
+        if (savedRating) {
+            ratingsArr = [{ rideId: null, rating: Number(savedRating), ts: new Date().toISOString(), source: 'legacy-driver-single' }];
+        }
+    }
+
+    // Compute average
+    if (!ratingsArr || ratingsArr.length === 0) {
+        $("#driverRatingValue").text("No ratings yet");
+        $("#driverRatingStars").html("☆☆☆☆☆");
+        return;
+    }
+
+    let sum = 0;
+    let count = 0;
+    ratingsArr.forEach(function (it) {
+        let r = Number(it.rating) || 0;
+        if (r > 0) {
+            sum += r;
+            count += 1;
+        }
+    });
+
+    if (count === 0) {
+        $("#driverRatingValue").text("No ratings yet");
+        $("#driverRatingStars").html("☆☆☆☆☆");
+        return;
+    }
+
+    let avg = sum / count;
+
+    $("#driverRatingValue").text(avg.toFixed(1) + " / 5 (" + count + " ratings)");
+
+    // Star visuals: round to nearest integer for simple stars
+    let rounded = Math.round(avg);
+    let starsHTML = "";
+    for (let i = 1; i <= 5; i++) {
+        starsHTML += (i <= rounded) ? "★" : "☆";
+    }
+    $("#driverRatingStars").html(starsHTML);
+
+});
+</script>
+
+
+</body>
+</html>
